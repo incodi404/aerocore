@@ -13,6 +13,8 @@ services: # this defines all container (microservices and dbs)
       - ./services/auth_service/.env
     depends_on:
       - auth-db
+      - redis
+      - rabbitmq
     volumes:
       - ./services/auth_service:/app
       - /app/node_modules
@@ -40,6 +42,8 @@ services: # this defines all container (microservices and dbs)
       - ./services/booking_service/.env
     depends_on:
       - booking-db
+      - redis
+      - rabbitmq
     volumes:
       - ./services/booking_service:/app
       - /app/node_modules
@@ -67,6 +71,8 @@ services: # this defines all container (microservices and dbs)
       - ./services/flight_service/.env
     depends_on:
       - flight-db
+      - redis
+      - rabbitmq
     volumes:
       - ./services/flight_service:/app
       - /app/node_modules
@@ -94,6 +100,8 @@ services: # this defines all container (microservices and dbs)
       - ./services/payment_service/.env
     depends_on:
       - payment-db
+      - redis
+      - rabbitmq
     volumes:
       - ./services/payment_service:/app
       - /app/node_modules
@@ -107,8 +115,32 @@ services: # this defines all container (microservices and dbs)
     volumes:
       - payment_db_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    command: redis-server --requirepass arecoreredis@321
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - 15672:15672
+      - 5672:5672
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password@321
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_log:/var/log/rabbitmq
+
 volumes:
   auth_db_data:
   booking_db_data:
   flight_db_data:
   payment_db_data:
+  redis_data:
+  rabbitmq_data:
+  rabbitmq_log:
