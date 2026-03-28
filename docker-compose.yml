@@ -1,0 +1,114 @@
+services: # this defines all container (microservices and dbs)
+  # ====================
+  # Auth Service + DB
+  # ====================
+
+  auth-service:
+    build:
+      context: ./services/auth_service # build the image from "./services/auth_service/Dockerfile"
+      target: dev
+    ports:
+      - "3001:3000" # exposed in 3001 outside of the Docker and run on 3000 within the Docker
+    env_file:
+      - ./services/auth_service/.env
+    depends_on:
+      - auth-db
+    volumes:
+      - ./services/auth_service:/app
+      - /app/node_modules
+
+  auth-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+
+  # ====================
+  # Booking Service + DB
+  # ====================
+
+  booking-service:
+    build:
+      context: ./services/booking_service
+      target: dev
+    ports:
+      - "3002:3000" # exposed in 3001 outside of the Docker and run on 3000 within the Docker
+    env_file:
+      - ./services/booking_service/.env
+    depends_on:
+      - booking-db
+    volumes:
+      - ./services/booking_service:/app
+      - /app/node_modules
+
+  booking-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: booking_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - booking_db_data:/var/lib/postgresql/data
+
+  # ====================
+  # Flight Service + DB
+  # ====================
+
+  flight-service:
+    build:
+      context: ./services/flight_service
+      target: dev
+    ports:
+      - "3003:3000" # exposed in 3001 outside of the Docker and run on 3000 within the Docker
+    env_file:
+      - ./services/flight_service/.env
+    depends_on:
+      - flight-db
+    volumes:
+      - ./services/flight_service:/app
+      - /app/node_modules
+
+  flight-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: flight_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - flight_db_data:/var/lib/postgresql/data
+
+  # ====================
+  # Payment Service + DB
+  # ====================
+
+  payment-service:
+    build:
+      context: ./services/payment_service
+      target: dev
+    ports:
+      - "3004:3000" # exposed in 3001 outside of the Docker and run on 3000 within the Docker
+    env_file:
+      - ./services/payment_service/.env
+    depends_on:
+      - payment-db
+    volumes:
+      - ./services/payment_service:/app
+      - /app/node_modules
+
+  payment-db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - payment_db_data:/var/lib/postgresql/data
+
+volumes:
+  auth_db_data:
+  booking_db_data:
+  flight_db_data:
+  payment_db_data:
