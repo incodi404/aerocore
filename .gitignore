@@ -1,11 +1,15 @@
 services/auth_service/node_modules
 services/auth_service/log
+services/auth_service/.env
 
 services/booking_service/node_modules
 services/booking_service/log
+services/booking_service/.env
 
 services/flight_service/node_modules
 services/flight_service/log
+services/flight_service/.env
 
 services/payment_service/node_modules
 services/payment_service/log
+services/payment_service/.env
