@@ -10,7 +10,7 @@ import {
 export const user = pgTable(
   "user",
   {
-    id: serial("id").primaryKey(),
+    id: serial("id").primaryKey(), // auto-increament
 
     userId: varchar("userId", {
       length: 255,
@@ -24,6 +24,9 @@ export const user = pgTable(
 
     isBlocked: boolean("isBlocked").default(false),
     isActive: boolean("isActive").default(true),
+
+    createdAt: date("createdAt"),
+    verifiedAt: date("verifiedAt"),
   },
   // Indexing
   (table) => [
