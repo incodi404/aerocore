@@ -17,7 +17,6 @@ services: # this defines all container (microservices and dbs)
       - rabbitmq
     volumes:
       - ./services/auth_service:/app
-      - /app/node_modules
 
   auth-db:
     image: postgres:15
@@ -46,7 +45,6 @@ services: # this defines all container (microservices and dbs)
       - rabbitmq
     volumes:
       - ./services/booking_service:/app
-      - /app/node_modules
 
   booking-db:
     image: postgres:15
@@ -75,7 +73,6 @@ services: # this defines all container (microservices and dbs)
       - rabbitmq
     volumes:
       - ./services/flight_service:/app
-      - /app/node_modules
 
   flight-db:
     image: postgres:15
@@ -104,7 +101,6 @@ services: # this defines all container (microservices and dbs)
       - rabbitmq
     volumes:
       - ./services/payment_service:/app
-      - /app/node_modules
 
   payment-db:
     image: postgres:15

@@ -18,7 +18,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   logger.info(
     `URL: ${req.originalUrl} :: Method: ${
       req.method
-    } :: Timestamp: ${new Date().toLocaleString("en-IN")}`,
+    } :: Timestamp: ${new Date().toISOString()}`,
   );
   next();
 });
@@ -27,6 +27,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.get("/health", (req: Request, res: Response) => {
   return res.send("Everything is okay!");
 });
+
+// ============================================================
+import { userRouter } from "./routes/user.route";
+
+app.use("/api/v1", userRouter);
 
 // error handling
 app.use(errorHandler);
