@@ -10,27 +10,27 @@ import {
 export const user = pgTable(
   "user",
   {
-    id: serial("id").primaryKey(), // auto-increament
+    id: serial("id"), // auto-increament
 
-    userId: varchar("userId", {
+    user_id: varchar("user_id", {
       length: 255,
-    }).notNull(),
+    }).primaryKey(),
 
     name: varchar("name", { length: 255 }).notNull(),
     email: varchar("email", { length: 255 }).notNull().unique(),
     password: varchar("password", { length: 255 }).notNull(),
 
-    lastLoginAt: date("lastLoginAt"),
+    last_login_at: date("last_login_at"),
 
-    isBlocked: boolean("isBlocked").default(false),
-    isActive: boolean("isActive").default(true),
+    is_blocked: boolean("is_blocked").default(false),
+    is_active: boolean("is_active").default(true),
 
-    createdAt: date("createdAt"),
-    verifiedAt: date("verifiedAt"),
+    created_at: date("created_at"),
+    verified_at: date("verified_at"),
   },
   // Indexing
   (table) => [
     index("emailIdx").on(table.email),
-    index("userIdIdx").on(table.userId),
+    index("user_idIdx").on(table.user_id),
   ],
 );

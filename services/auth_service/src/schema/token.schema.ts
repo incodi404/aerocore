@@ -10,21 +10,24 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "./user.schema";
 
-const purposeEnum = pgEnum("purpose", ["Register", "Password Reset"]);
+export const purposeEnum = pgEnum("token_purpose", [
+  "Register",
+  "Password Reset",
+]);
 
 export const token = pgTable("token", {
   id: serial("id").primaryKey(),
 
   // fk
-  userId: varchar("userId", { length: 100 }).references(() => user.userId, {
+  user_id: varchar("user_id", { length: 100 }).references(() => user.user_id, {
     onDelete: "cascade",
   }),
 
   token: text("token").notNull(),
-  isUsed: boolean("isUsed").default(false),
+  is_used: boolean("is_used").default(false),
   purpose: purposeEnum("purpose").notNull(),
 
-  createdAt: timestamp("createdAt"),
-  expiresAt: timestamp("expiresAt"),
-  usedAt: timestamp("usedAt"),
+  created_at: timestamp("created_at"),
+  expires_at: timestamp("expires_at"),
+  used_at: timestamp("usedAt"),
 });

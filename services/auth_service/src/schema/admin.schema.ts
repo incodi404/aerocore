@@ -7,5 +7,5 @@ export const admin = pgTable("admin", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
 
-  lastLoginAt: date("lastLoginAt"),
+  last_login_at: date("last_login_at"),
 });

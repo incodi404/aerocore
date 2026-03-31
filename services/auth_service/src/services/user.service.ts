@@ -9,14 +9,14 @@ import bcrypt from "bcrypt";
 class UserAuth {
   // verification tokenization
   async tokenizingVerification(data: {
-    userId: string;
+    user_id: string;
     purpose: "Register" | "Password Reset";
     expiresInMinute: number;
   }) {
-    const { userId, purpose, expiresInMinute } = data;
+    const { user_id, purpose, expiresInMinute } = data;
 
     // generating SHA256 token
-    const token: string = generateSHA256(userId);
+    const token: string = generateSHA256(user_id);
     if (token.trim() === "") {
       throw new ApiError(500, "Generating token has been failed");
     }
@@ -26,7 +26,7 @@ class UserAuth {
 
     // db object
     const tokenInDb = [
-      userId,
+      user_id,
       hashedToken,
       false,
       purpose,
@@ -38,7 +38,7 @@ class UserAuth {
     const newToken = await pgPool.query(
       `
       INSERT INTO token 
-      ("userId", token, "isUsed", purpose, "createdAt", "expiresAt") 
+      ("user_id", token, "is_used", purpose, "created_at", "expires_at") 
       VALUES 
       ($1, $2, $3, $4, $5, $6)
       RETURNING id
@@ -64,15 +64,15 @@ class UserAuth {
       throw new ApiError(401, "Email is aleady exists");
     }
 
-    // snowflake id for unique userId
-    const uniqueUserId = generateSnowflakeId();
+    // snowflake id for unique user_id
+    const uniqueuser_id = generateSnowflakeId();
 
     // hash the password
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // data to be saved
     const userDataForDb = [
-      uniqueUserId,
+      uniqueuser_id,
       name,
       email,
       hashedPassword,
@@ -84,9 +84,9 @@ class UserAuth {
     // saving to db
     const newUnverifiedUser = await pgPool.query(
       `INSERT INTO 
-      "user" ("userId", name, email, password, "isBlocked", "isActive", "createdAt") 
+      "user" ("user_id", name, email, password, "is_blocked", "is_active", "created_at") 
       VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING id, email, name, "userId"
+      RETURNING id, email, name, "user_id"
       `,
       userDataForDb,
     );
@@ -100,7 +100,7 @@ class UserAuth {
     try {
       await this.tokenizingVerification({
         purpose: "Register",
-        userId: uniqueUserId,
+        user_id: uniqueuser_id,
         expiresInMinute: 10,
       });
     } catch (error) {
@@ -111,13 +111,11 @@ class UserAuth {
       }
     }
 
-    console.log("Successfull till now");
-
     return {
       email: email,
       id: newUnverifiedUserData?.id,
       name: name,
-      userId: uniqueUserId,
+      user_id: uniqueuser_id,
     };
   }
 }
