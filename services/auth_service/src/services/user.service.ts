@@ -1,5 +1,9 @@
 import { pgPool } from "../config/postgres";
+import { QUEUES } from "../config/rabbitmq.channels";
 import { UserRegister } from "../dto/user.dto";
+import { producer } from "../messaging/rabbitmq.producer";
+import { verifyAccountTemplate } from "../templates/verifyAccount.template";
+import { EmailJobs } from "../types/rabbitmq.type";
 import { User } from "../types/user.type";
 import { ApiError } from "../utils/ApiError";
 import { generateSHA256 } from "../utils/generateSHA256";
@@ -12,7 +16,7 @@ class UserAuth {
     user_id: string;
     purpose: "Register" | "Password Reset";
     expiresInMinute: number;
-  }) {
+  }): Promise<string> {
     const { user_id, purpose, expiresInMinute } = data;
 
     // generating SHA256 token
@@ -49,11 +53,14 @@ class UserAuth {
     if (!newTokenData) {
       throw new ApiError(500, "Saving token has been failed");
     }
+
+    return token;
   }
 
   // register user
   async create(data: UserRegister): Promise<User> {
     const { email, name, password } = data;
+    let token: string;
 
     // checking if the user exists based on the email id
     const existingUser = await pgPool.query(
@@ -98,10 +105,26 @@ class UserAuth {
 
     // generating SHA256 token for further process of verification
     try {
-      await this.tokenizingVerification({
+      token = await this.tokenizingVerification({
         purpose: "Register",
         user_id: uniqueuser_id,
         expiresInMinute: 10,
+      });
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw new ApiError(error.statusCode, error.message);
+      } else {
+        throw new ApiError(500, "Internal Server Error");
+      }
+    }
+
+    // send email
+    try {
+      await producer.publishToQueue<EmailJobs>(QUEUES.EMAIL, {
+        from: "areocore@aerocore.com",
+        to: email,
+        subject: "Verify Your Account",
+        html: verifyAccountTemplate(name, token, 10),
       });
     } catch (error) {
       if (error instanceof ApiError) {

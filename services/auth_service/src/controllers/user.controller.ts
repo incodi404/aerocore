@@ -9,7 +9,6 @@ const userRegister = asynchandler(async (req: Request, res: Response) => {
   const data: UserRegister = req.body;
 
   const userData = await userAuth.create(data);
-  console.log("User data: ", userData);
   return res
     .status(201)
     .json(

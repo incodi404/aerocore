@@ -4,6 +4,7 @@ dotenv.config({ path: "./.env" }); // MUST be first line
 import { app } from "./app";
 import { logger } from "./config/logger";
 import { pgPool } from "./config/postgres";
+import { connectRabbitMq, rabbitmqConnection } from "./config/amqp.config";
 
 dotenv.config({
   path: "./.env",
@@ -34,6 +35,9 @@ async function startServer() {
 
       process.exit(1);
     });
+
+    // rabbitmq
+    await connectRabbitMq();
   } catch (error: any) {
     console.log("[-] ERROR :: PostgreSQL connection is failed :: ", error);
     logger.error({
