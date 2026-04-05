@@ -13,3 +13,7 @@ services/flight_service/.env
 services/payment_service/node_modules
 services/payment_service/log
 services/payment_service/.env
+
+workers/email_worker/node_modules
+workers/email_worker/log
+workers/email_worker/.env

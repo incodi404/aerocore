@@ -1,4 +1,25 @@
 services: # this defines all container (microservices and dbs)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
+    command: redis-server --requirepass arecoreredis@321
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - 15672:15672
+      - 5672:5672
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password@321
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_log:/var/log/rabbitmq
+
   # ====================
   # Auth Service + DB
   # ====================
@@ -115,26 +136,20 @@ services: # this defines all container (microservices and dbs)
     volumes:
       - payment_db_data:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - 6379:6379
-    command: redis-server --requirepass arecoreredis@321
+  # ====================
+  # Email Worker
+  # ====================
+  email-worker:
+    build:
+      context: ./workers/email_worker
+      target: dev
+    env_file:
+      - ./workers/email_worker/.env
+    depends_on:
+      - rabbitmq
     volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    ports:
-      - 15672:15672
-      - 5672:5672
-    environment:
-      - RABBITMQ_DEFAULT_USER=user
-      - RABBITMQ_DEFAULT_PASS=password@321
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-      - rabbitmq_log:/var/log/rabbitmq
+      - ./workers/email_worker:/app
+      - /app/node_modules
 
 volumes:
   auth_db_data:
