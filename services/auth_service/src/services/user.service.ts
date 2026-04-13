@@ -63,6 +63,7 @@ class UserAuth {
     let token: string;
 
     // checking if the user exists based on the email id
+    /*
     const existingUser = await pgPool.query(
       `SELECT * FROM "user" WHERE email=$1`,
       [email],
@@ -70,6 +71,7 @@ class UserAuth {
     if (existingUser.rows.length > 0) {
       throw new ApiError(401, "Email is aleady exists");
     }
+      */
 
     // snowflake id for unique user_id
     const uniqueuser_id = generateSnowflakeId();

@@ -4,7 +4,7 @@ dotenv.config({ path: "./.env" }); // MUST be first line
 import { app } from "./app";
 import { logger } from "./config/logger";
 import { pgPool } from "./config/postgres";
-import { connectRabbitMq, rabbitmqConnection } from "./config/amqp.config";
+import { connectRabbitMq } from "./config/amqp.config";
 
 dotenv.config({
   path: "./.env",
