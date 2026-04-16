@@ -6,20 +6,30 @@ export let rabbitmqConnection: amqp.Connection | null = null;
 let rabbitMqChannel: amqp.Channel | null = null;
 
 export const connectRabbitMq = async () => {
-  try {
-    const rabbitmqUrl = `${process?.env?.RABBITMQ_USER}:${process?.env?.RABBITMQ_PASSWD}@${process?.env?.AMQP_CONNECT_URL}`;
-    const connection = await amqp.connect(
-      `amqp://${rabbitmqUrl || "localhost"}`,
-    );
+  let retryTime = 5;
 
-    rabbitmqConnection = connection;
-    rabbitMqChannel = await connection.createChannel();
+  while (retryTime) {
+    try {
+      const rabbitmqUrl = `${process?.env?.RABBITMQ_USER}:${process?.env?.RABBITMQ_PASSWD}@${process?.env?.AMQP_CONNECT_URL}`;
+      const connection = await amqp.connect(
+        `amqp://${rabbitmqUrl || "localhost"}`,
+      );
 
-    console.log("[+] RabbitMQ is connected");
-    logger.info("RabbitMQ is connected");
-  } catch (error) {
-    console.log("[+] ERROR :: RabbitMQ connection has been failed :: ", error);
-    logger.error("RabbitMQ connection has been failed");
+      rabbitmqConnection = connection;
+      rabbitMqChannel = await connection.createChannel();
+
+      console.log("[+] RabbitMQ is connected");
+      logger.info("RabbitMQ is connected");
+      break;
+    } catch (error) {
+      console.log(
+        "[+] ERROR :: RabbitMQ connection has been failed :: ",
+        error,
+      );
+      logger.error("RabbitMQ connection has been failed");
+      retryTime--;
+      await new Promise((res) => setTimeout(res, 5000));
+    }
   }
 };
 

@@ -27,9 +27,9 @@ class Consumer {
           );
 
           // sharing the data to email sender funtion
-          await emailSender.sendEmail(data);
+          await emailSender.sendEmail(data, channel);
         },
-        { noAck: true },
+        { noAck: false },
       );
     } catch (error) {
       console.log("[ERROR] Error encountered in consumer :: ", error);

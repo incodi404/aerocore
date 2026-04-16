@@ -123,7 +123,7 @@ class UserAuth {
     // send email
     try {
       await producer.publishToQueue<EmailJobs>(QUEUES.EMAIL, {
-        from: "areocore@aerocore.com",
+        from: "Aerocore <dipankarnn2123@gmail.com>",
         to: email,
         subject: "Verify Your Account",
         html: verifyAccountTemplate(name, token, 10),
