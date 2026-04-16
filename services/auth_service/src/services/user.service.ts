@@ -1,10 +1,11 @@
+import { tokenManager } from "../classes/token.class";
 import { pgPool } from "../config/postgres";
 import { QUEUES } from "../config/rabbitmq.channels";
 import { UserRegister } from "../dto/user.dto";
 import { producer } from "../messaging/rabbitmq.producer";
 import { verifyAccountTemplate } from "../templates/verifyAccount.template";
 import { EmailJobs } from "../types/rabbitmq.type";
-import { User } from "../types/user.type";
+import { JwtTokens, User } from "../types/user.type";
 import { ApiError } from "../utils/ApiError";
 import { generateSHA256 } from "../utils/generateSHA256";
 import { generateSnowflakeId } from "../utils/generateSnowflakeId";
@@ -63,7 +64,6 @@ class UserAuth {
     let token: string;
 
     // checking if the user exists based on the email id
-    /*
     const existingUser = await pgPool.query(
       `SELECT * FROM "user" WHERE email=$1`,
       [email],
@@ -71,7 +71,6 @@ class UserAuth {
     if (existingUser.rows.length > 0) {
       throw new ApiError(401, "Email is aleady exists");
     }
-      */
 
     // snowflake id for unique user_id
     const uniqueuser_id = generateSnowflakeId();
@@ -126,7 +125,7 @@ class UserAuth {
         from: "Aerocore <dipankarnn2123@gmail.com>",
         to: email,
         subject: "Verify Your Account",
-        html: verifyAccountTemplate(name, token, 10),
+        html: verifyAccountTemplate(name, `${token}/${uniqueuser_id}`, 10),
       });
     } catch (error) {
       if (error instanceof ApiError) {
@@ -142,6 +141,16 @@ class UserAuth {
       name: name,
       user_id: uniqueuser_id,
     };
+  }
+
+  // verify token
+  async tokenVerification(
+    hashed_token: string,
+    user_id: string,
+  ): Promise<JwtTokens> {
+    await tokenManager.verifyAuthToken(hashed_token, user_id);
+
+    return { accessToken: "", refreshToken: "" };
   }
 }
 
