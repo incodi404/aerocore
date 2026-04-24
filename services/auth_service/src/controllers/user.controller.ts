@@ -21,23 +21,25 @@ const userRegister = asynchandler(async (req: Request, res: Response) => {
     );
 });
 
-const verifyToken = asynchandler(async (req: Request, res: Response) => {
-  const { hashed_token, user_id } = req.params;
+const verifyTokenAndLogin = asynchandler(
+  async (req: Request, res: Response) => {
+    const { token, user_id } = req.params;
 
-  if (!hashed_token || Array.isArray(hashed_token)) {
-    throw new ApiError(400, "Token is required");
-  }
+    if (!token || Array.isArray(token)) {
+      throw new ApiError(400, "Token is required");
+    }
 
-  if (!user_id || Array.isArray(user_id)) {
-    throw new ApiError(400, "User ID is required");
-  }
+    if (!user_id || Array.isArray(user_id)) {
+      throw new ApiError(400, "User ID is required");
+    }
 
-  const { accessToken, refreshToken } = await userAuth.tokenVerification(
-    hashed_token,
-    user_id,
-  );
+    const { accessToken, refreshToken } =
+      await userAuth.tokenVerificationAndLogin(token, user_id);
 
-  return res.status(200).json(new ApiResponse(true, "Token has been verified"));
-});
+    return res
+      .status(200)
+      .json(new ApiResponse(true, "Token has been verified"));
+  },
+);
 
-export { userRegister, verifyToken };
+export { userRegister, verifyTokenAndLogin };

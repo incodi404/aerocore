@@ -3,9 +3,15 @@ import { pgPool } from "../config/postgres";
 import { QUEUES } from "../config/rabbitmq.channels";
 import { UserRegister } from "../dto/user.dto";
 import { producer } from "../messaging/rabbitmq.producer";
+import {
+  CREATE_NEW_UNVERIFIED_USER,
+  CREATE_NEW_VERIFICATION_TOKEN,
+  FETCH_EXISTING_USER,
+} from "../queries";
 import { verifyAccountTemplate } from "../templates/verifyAccount.template";
 import { EmailJobs } from "../types/rabbitmq.type";
-import { JwtTokens, User } from "../types/user.type";
+import { JwtTokens } from "../types/token.type";
+import { User } from "../types/user.type";
 import { ApiError } from "../utils/ApiError";
 import { generateSHA256 } from "../utils/generateSHA256";
 import { generateSnowflakeId } from "../utils/generateSnowflakeId";
@@ -41,13 +47,7 @@ class UserAuth {
 
     // saving to db
     const newToken = await pgPool.query(
-      `
-      INSERT INTO token 
-      ("user_id", token, "is_used", purpose, "created_at", "expires_at") 
-      VALUES 
-      ($1, $2, $3, $4, $5, $6)
-      RETURNING id
-      `,
+      CREATE_NEW_VERIFICATION_TOKEN,
       tokenInDb,
     );
     const newTokenData = newToken.rows.length > 0 ? newToken.rows[0] : null;
@@ -64,10 +64,7 @@ class UserAuth {
     let token: string;
 
     // checking if the user exists based on the email id
-    const existingUser = await pgPool.query(
-      `SELECT * FROM "user" WHERE email=$1`,
-      [email],
-    );
+    const existingUser = await pgPool.query(FETCH_EXISTING_USER, [email]);
     if (existingUser.rows.length > 0) {
       throw new ApiError(401, "Email is aleady exists");
     }
@@ -91,11 +88,7 @@ class UserAuth {
 
     // saving to db
     const newUnverifiedUser = await pgPool.query(
-      `INSERT INTO 
-      "user" ("user_id", name, email, password, "is_blocked", "is_active", "created_at") 
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING id, email, name, "user_id"
-      `,
+      CREATE_NEW_UNVERIFIED_USER,
       userDataForDb,
     );
     const newUnverifiedUserData =
@@ -143,12 +136,12 @@ class UserAuth {
     };
   }
 
-  // verify token
-  async tokenVerification(
-    hashed_token: string,
+  // verified account
+  async tokenVerificationAndLogin(
+    token: string,
     user_id: string,
   ): Promise<JwtTokens> {
-    await tokenManager.verifyAuthToken(hashed_token, user_id);
+    await tokenManager.verifyAuthToken(token, user_id);
 
     return { accessToken: "", refreshToken: "" };
   }

@@ -5,9 +5,4 @@ interface User {
   email: string;
 }
 
-interface JwtTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export { User, JwtTokens };
+export { User };
