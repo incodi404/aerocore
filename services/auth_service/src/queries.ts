@@ -17,3 +17,10 @@ SET is_used = $1
     used_at = $2
 WHERE user_id = $3
 `;
+export const UPDATE_USER_TABLE_TO_VERIFIED = `
+UPDATE "user"
+SET is_active = $1
+    verified_at = $2
+WHERE user_id = $3
+RETURNING id, email, name, "user_id"
+`;

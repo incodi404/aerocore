@@ -56,6 +56,13 @@ class TokenManager {
     if (!isTokenValid) {
       throw new ApiError(401, "Token is not valid");
     }
+
+    // after successfull verification, invalid the token
+    await pgPool.query(UPDATE_TOKEN_TABLE_TO_VERIFIED, [
+      true,
+      new Date(),
+      user_id,
+    ]);
   }
 }
 

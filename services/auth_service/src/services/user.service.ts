@@ -7,6 +7,7 @@ import {
   CREATE_NEW_UNVERIFIED_USER,
   CREATE_NEW_VERIFICATION_TOKEN,
   FETCH_EXISTING_USER,
+  UPDATE_USER_TABLE_TO_VERIFIED,
 } from "../queries";
 import { verifyAccountTemplate } from "../templates/verifyAccount.template";
 import { EmailJobs } from "../types/rabbitmq.type";
@@ -141,7 +142,17 @@ class UserAuth {
     token: string,
     user_id: string,
   ): Promise<JwtTokens> {
-    await tokenManager.verifyAuthToken(token, user_id);
+    await tokenManager.verifyAuthToken(token, user_id); // token verification
+    const userRow = await pgPool.query(UPDATE_USER_TABLE_TO_VERIFIED, [
+      true,
+      new Date(),
+      user_id,
+    ]); // update user field
+    if (userRow.rowCount === 0 || !Array.isArray(userRow.rows)) {
+      throw new ApiError(404, "User not found");
+    }
+
+    const user: User = userRow.rows[0]; // getting user
 
     return { accessToken: "", refreshToken: "" };
   }
