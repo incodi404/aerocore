@@ -3,9 +3,10 @@ import {
   FETCH_TOKEN_ROW_FROM_TOKEN_TABLE,
   UPDATE_TOKEN_TABLE_TO_VERIFIED,
 } from "../queries";
-import { DBToken } from "../types/token.type";
+import { DBToken, JwtTokens } from "../types/token.type";
 import { ApiError } from "../utils/ApiError";
 import bcrypt from "bcrypt";
+import jwt, { JsonWebTokenError, JwtPayload, SignOptions } from "jsonwebtoken";
 
 class TokenManager {
   isExpired(expires_at: Date) {
@@ -63,6 +64,60 @@ class TokenManager {
       new Date(),
       user_id,
     ]);
+  }
+
+  generateJwtToken(
+    data: object,
+    secret: string,
+    expiresIn: SignOptions["expiresIn"],
+  ): string {
+    try {
+      const token: string = jwt.sign(data, secret, { expiresIn: expiresIn });
+      return token;
+    } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        throw new ApiError(401, error.message);
+      } else if (error instanceof Error) {
+        throw new ApiError(401, error.message, error.stack);
+      } else {
+        throw new ApiError(500, "Internal Server Error");
+      }
+    }
+  }
+
+  verifyJwtToken(token: string, secret: string): string | JwtPayload {
+    try {
+      const isVerified = jwt.verify(token, secret);
+      return isVerified;
+    } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        throw new ApiError(401, error.message);
+      } else if (error instanceof Error) {
+        throw new ApiError(401, error.message, error.stack);
+      } else {
+        throw new ApiError(500, "Internal Server Error");
+      }
+    }
+  }
+
+  generateAccessAndRefreshToken<T extends object>(
+    data: T,
+    accessTokenCred: { secret: string; expiresIn: SignOptions["expiresIn"] },
+    refreshTokenCred: { secret: string; expiresIn: SignOptions["expiresIn"] },
+  ): JwtTokens {
+    const accessToken = this.generateJwtToken(
+      data,
+      accessTokenCred.secret,
+      accessTokenCred.expiresIn,
+    );
+
+    const refreshToken = this.generateJwtToken(
+      data,
+      refreshTokenCred.secret,
+      refreshTokenCred.expiresIn,
+    );
+
+    return { accessToken: accessToken, refreshToken: refreshToken };
   }
 }
 

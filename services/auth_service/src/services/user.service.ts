@@ -1,3 +1,4 @@
+import { SignOptions } from "jsonwebtoken";
 import { tokenManager } from "../classes/token.class";
 import { pgPool } from "../config/postgres";
 import { QUEUES } from "../config/rabbitmq.channels";
@@ -153,6 +154,25 @@ class UserAuth {
     }
 
     const user: User = userRow.rows[0]; // getting user
+
+    const { accessToken, refreshToken } =
+      tokenManager.generateAccessAndRefreshToken(
+        user,
+        {
+          secret: process.env.ACCESS_TOKEN_SECRET || "",
+          expiresIn: process.env
+            .ACCESS_TOKEN_EXPIRY as SignOptions["expiresIn"],
+        },
+        {
+          secret: process.env.REFRESH_TOKEN_SECRET || "",
+          expiresIn: process.env
+            .REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"],
+        },
+      );
+
+    if (!accessToken || !refreshToken) {
+      throw new ApiError(500, "Token generation has been failed");
+    }
 
     return { accessToken: "", refreshToken: "" };
   }
