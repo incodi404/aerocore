@@ -3,3 +3,4 @@ npm generate
 
 Then migrate:
 npm migrate
+wsddc
